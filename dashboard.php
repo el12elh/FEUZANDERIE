@@ -1,0 +1,421 @@
+<?php
+    include 'security.php';
+
+    $stmt_1= $pdo->prepare("
+        WITH sales AS (
+            SELECT 
+                YEAR(created_at)  AS year_tr,
+                MONTH(created_at) AS month_tr,
+                COUNT(DISTINCT id_customer) AS cnt_customer,
+                SUM(total) AS total_sales
+            FROM transactions
+            WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR)
+            AND id_customer != 1
+            GROUP BY YEAR(created_at), MONTH(created_at)
+        ),
+        refunds AS (
+            SELECT 
+                YEAR(created_at)  AS year_tr,
+                MONTH(created_at) AS month_tr,
+                SUM(amount) AS refund
+            FROM wallet_topup
+            WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR)
+            AND id_topup_type = '5'
+            GROUP BY YEAR(created_at), MONTH(created_at)
+        )
+        SELECT
+            s.YEAR_TR,
+            s.MONTH_TR,
+            s.CNT_CUSTOMER,
+            s.total_sales - IFNULL(r.refund, 0) AS NET_SALES
+        FROM sales s
+        LEFT JOIN refunds r
+            ON s.year_tr = r.year_tr
+        AND s.month_tr = r.month_tr
+        ORDER BY s.YEAR_TR, s.MONTH_TR
+    ");
+
+    $stmt_1->execute();
+    $kpi_1 = $stmt_1->fetchAll();
+
+    $currentYear = date('Y');
+    $previousYear = $currentYear - 1;
+
+    // Labels = months only
+    $labels = [];
+    for ($m = 1; $m <= 12; $m++) {
+        $labels[] = str_pad($m, 2, '0', STR_PAD_LEFT);
+    }
+
+    // Initialise arrays with 0 (important if some months are missing)
+    $sales_cy = array_fill(0, 12, 0);
+    $cnt_customer_cy = array_fill(0, 12, 0);
+    $sales_py = array_fill(0, 12, 0);
+    $cnt_customer_py = array_fill(0, 12, 0);
+
+    foreach ($kpi_1 as $row) {
+        $monthIndex = (int)$row['MONTH_TR'] - 1;
+
+        if ($row['YEAR_TR'] == $currentYear) {
+            $sales_cy[$monthIndex] = (int)$row['TOTAL_SALES'];
+            $cnt_customer_cy[$monthIndex] = $row['CNT_CUSTOMER'];
+        }
+
+        if ($row['YEAR_TR'] == $previousYear) {
+            $sales_py[$monthIndex] = (int)$row['TOTAL_SALES'];
+            $cnt_customer_py[$monthIndex] = $row['CNT_CUSTOMER'];
+        }
+    }
+
+    $stmt_2= $pdo->prepare("
+        SELECT
+            rtt.NAME AS METHOD,
+            DATE_FORMAT(wt.CREATED_AT, '%d-%m-%y') AS DATE_TUP,
+            SUM(wt.AMOUNT) AS REVENUE
+        FROM wallet_topup wt
+        JOIN ref_topup_type rtt 
+            ON wt.ID_TOPUP_TYPE = rtt.ID_TOPUP_TYPE
+        INNER JOIN (
+            SELECT DISTINCT DATE(CREATED_AT) AS active_date
+            FROM wallet_topup
+            WHERE ID_TOPUP_TYPE IN (2,3,4)
+            ORDER BY active_date DESC
+            LIMIT 7
+        ) AS last_seven ON DATE(wt.CREATED_AT) = last_seven.active_date
+        WHERE wt.ID_TOPUP_TYPE IN (2,3,4)
+        GROUP BY DATE(wt.CREATED_AT), rtt.NAME
+        ORDER BY wt.ID_TOPUP_TYPE, DATE(wt.CREATED_AT)
+    ");
+
+    $stmt_2->execute();
+    $kpi_2 = $stmt_2->fetchAll();
+
+    // 1. Process results into a structured matrix: [Method][Date] = Amount
+    $matrix = [];
+    $methods = [];
+    $labels_2 = [];
+
+    foreach ($kpi_2 as $row) {
+        $date = $row['DATE_TUP'];
+        $method = $row['METHOD'];
+        
+        if (!in_array($date, $labels_2)) $labels_2[] = $date;
+        if (!in_array($method, $methods)) $methods[] = $method;
+        
+        $matrix[$method][$date] = (float)$row['REVENUE'];
+    }
+
+    // 2. Prepare datasets for Chart
+    $datasets = [];
+    $colors = [
+        'Cash' => 'rgb(35, 40, 86)',
+        'Credit Card' => 'rgb(249, 230, 27)',
+        'Bank Transfer' => 'rgb(255, 255, 255)'
+    ];
+
+    foreach ($methods as $method) {
+        $data = [];
+        foreach ($labels_2 as $date) {
+            // If data is missing for a specific date/method combo, default to 0
+            $data[] = $matrix[$method][$date] ?? 0;
+        }
+
+        $datasets[] = [
+            'label' => $method,
+            'data' => $data,
+            'backgroundColor' => $colors[$method] ?? 'rgb(200, 200, 200)' // Fallback color
+        ];
+    }
+
+
+    // GET best customers
+    $stmt_3= $pdo->prepare("
+        SELECT 
+            DENSE_RANK() OVER (ORDER BY SUM(p.PRICE * tr.QUANTITY) DESC) AS D_RANK,
+            CONCAT(c.FIRST_NAME, ' ', c.LAST_NAME) AS CUSTOMER,
+            SUM(p.PRICE * tr.QUANTITY) AS TOTAL_ORDER_VALUE
+        FROM transactions tr
+        JOIN customers c 
+            ON tr.ID_CUSTOMER = c.ID_CUSTOMER
+        LEFT JOIN ref_product p 
+            ON tr.ID_PRODUCT = p.ID_PRODUCT
+        WHERE tr.CREATED_AT >= DATE_FORMAT(NOW(), '%Y-01-01') AND c.ID_CUSTOMER != 1
+        GROUP BY c.ID_CUSTOMER, c.FIRST_NAME, c.LAST_NAME
+        ORDER BY TOTAL_ORDER_VALUE DESC
+        LIMIT 5
+    ");
+
+    $stmt_3->execute();
+    $kpi_3 = $stmt_3->fetchAll();
+
+    // GET Amikale Note
+    $stmt_4= $pdo->prepare("
+        SELECT 
+            YEAR(CREATED_AT) YEAR_TR,
+            MONTH(CREATED_AT) MONTH_TR,
+            -SUM(TOTAL) TOTAL_LOSS
+        FROM transactions
+        WHERE YEAR(CREATED_AT) = YEAR(now()) AND ID_CUSTOMER = 1
+        GROUP BY YEAR(CREATED_AT), MONTH(CREATED_AT)
+        ORDER BY YEAR(CREATED_AT), MONTH(CREATED_AT)
+    ");
+
+    $stmt_4->execute();
+    $kpi_4 = $stmt_4->fetchAll();
+
+    // Initialise arrays with 0 (important if some months are missing)
+    $loss_cy = array_fill(0, 12, 0);
+
+    foreach ($kpi_4 as $row) {
+        $monthIndex = (int)$row['MONTH_TR'] - 1;
+        $loss_cy[$monthIndex] = (int)$row['TOTAL_LOSS'];
+    }
+?>
+
+<article id="dashboard">
+    <h2 class="major">Dashboard</h2>
+
+    <canvas id="revenueChart" height="100"></canvas>
+    <hr />
+    <canvas id="lossChart" height="100"></canvas>
+    <hr />
+    <canvas id="salesChart" height="100"></canvas>
+    <hr />
+    <canvas id="CustChart" height="100"></canvas>
+    <hr />
+    <canvas id="topCustomersChart" height="150"></canvas>
+    
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+
+    const ctx1 = document.getElementById('salesChart').getContext('2d');
+    new Chart(ctx1, {
+        type: 'line',
+        data: {
+            labels: <?= json_encode($labels) ?>,
+            datasets: [
+                {
+                    label: 'Sales <?= date("Y") ?>',
+                    data: <?= json_encode($sales_cy) ?>,
+                    borderColor: 'rgb(35, 40, 86)',
+                    backgroundColor: 'rgba(35, 40, 86, 0.25)', // ✅ background
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: true, // ✅ enable background
+                    pointRadius: 3
+                },
+                {
+                    label: 'Sales <?= date("Y")-1 ?>',
+                    data: <?= json_encode($sales_py) ?>,
+                    borderColor: 'rgb(249, 230, 27)',
+                    backgroundColor: 'rgba(249, 230, 27, 0.25)', // ✅ background
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: true,
+                    pointRadius: 3
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Monthly Sales – CY vs PY'
+                },
+                legend: {
+                    labels: {
+                        usePointStyle: true, // ✅ line instead of rectangle
+                        pointStyle: 'line'
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => ctx.dataset.label + ': ' + ctx.parsed.y + '€'
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: v => v + '€'
+                    }
+                }
+            }
+        }
+    });
+        
+    const ctx2 = document.getElementById('CustChart').getContext('2d');
+        new Chart(ctx2, {
+        type: 'line',
+        data: {
+            labels: <?= json_encode($labels) ?>,
+            datasets: [
+                {
+                    label: 'Members <?= date("Y") ?>',
+                    data: <?= json_encode($cnt_customer_cy) ?>,
+                    borderColor: 'rgb(35, 40, 86)',
+                    backgroundColor: 'rgb(35, 40, 86, 0.50)', // ✅ background
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: true, // ✅ enable background
+                    pointRadius: 3
+                },
+                {
+                    label: 'Members <?= date("Y")-1 ?>',
+                    data: <?= json_encode($cnt_customer_py) ?>,
+                    borderColor: 'rgb(249, 230, 27)',
+                    backgroundColor: 'rgba(249, 230, 27, 0.25)', // ✅ background
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: true,
+                    pointRadius: 3
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Active Members – CY vs PY'
+                },
+                legend: {
+                    labels: {
+                        usePointStyle: true, // ✅ line instead of rectangle
+                        pointStyle: 'line'
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => ctx.dataset.label + ': ' + ctx.parsed.y
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    const ctx3 = document.getElementById('revenueChart').getContext('2d');
+
+    new Chart(ctx3, {
+        type: 'bar',
+        data: {
+            labels: <?= json_encode($labels_2) ?>,
+            datasets: <?= json_encode($datasets) ?>
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Revenue per Payment Method – Last 7 Active Days'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => ctx.dataset.label + ': ' + ctx.parsed.y + '€'
+                    }
+                }
+            },
+            scales: {
+                x: { stacked: true },
+                y: { 
+                    stacked: true,
+                    beginAtZero: true,
+                    ticks: { callback: v => v + '€' }
+                }
+            }
+        }
+    });
+
+    const ctx_4 = document.getElementById('topCustomersChart').getContext('2d');
+
+    new Chart(ctx_4, {
+        type: 'bar',
+        data: {
+            labels: <?= json_encode(array_column($kpi_3, 'CUSTOMER')) ?>,
+            datasets: [{
+                label: 'Total Order Value',
+                data: <?= json_encode(array_map(fn($c) => (float)$c['TOTAL_ORDER_VALUE'], $kpi_3)) ?>,
+                backgroundColor: 'rgb(35, 40, 86)',
+            }]
+        },
+        options: {
+            indexAxis: 'y', // horizontal bars
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Top 5 Members – CY'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => ctx.dataset.label + ': ' + ctx.parsed.x + '€'
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    ticks: { callback: v => v + '€' }
+                }
+            }
+        }
+    });
+
+    const ctx4 = document.getElementById('lossChart').getContext('2d');
+    new Chart(ctx4, {
+        type: 'line',
+        data: {
+            labels: <?= json_encode($labels) ?>,
+            datasets: [
+                {
+                    label: 'Loss <?= date("Y") ?>',
+                    data: <?= json_encode($loss_cy) ?>,
+                    borderColor: 'rgb(255, 0, 0)',
+                    backgroundColor: 'rgba(255, 0, 0, 0.25)', // ✅ background
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: true, // ✅ enable background
+                    pointRadius: 3
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Amikale Rounds – CY'
+                },
+                legend: {
+                    labels: {
+                        usePointStyle: true, // ✅ line instead of rectangle
+                        pointStyle: 'line'
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => ctx.dataset.label + ': ' + ctx.parsed.y + '€'
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: v => v + '€'
+                    }
+                }
+            }
+        }
+    });
+    });
+    </script>
+
+</article>
