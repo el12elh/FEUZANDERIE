@@ -41,10 +41,11 @@
     $currentYear = date('Y');
     $previousYear = $currentYear - 1;
 
-    // Labels = months only
+    // Labels = short month names (Jan, Feb, Mar...)
     $labels = [];
     for ($m = 1; $m <= 12; $m++) {
-        $labels[] = str_pad($m, 2, '0', STR_PAD_LEFT);
+        // mktime(heure, minute, seconde, mois, jour)
+        $labels[] = date("M", mktime(0, 0, 0, $m, 1));
     }
 
     // Initialise arrays with 0 (important if some months are missing)
@@ -130,20 +131,33 @@
 
     // GET best customers
     $stmt_3= $pdo->prepare("
+    SELECT 
+        sub.CUSTOMER,
+        (sub.TOTAL_ORDER_VALUE - COALESCE(ref.TOTAL_REFUND, 0)) AS NET_VALUE
+    FROM (
         SELECT 
-            DENSE_RANK() OVER (ORDER BY SUM(p.PRICE * tr.QUANTITY) DESC) AS D_RANK,
+            c.ID_CUSTOMER,
             CONCAT(c.FIRST_NAME, ' ', c.LAST_NAME) AS CUSTOMER,
             SUM(p.PRICE * tr.QUANTITY) AS TOTAL_ORDER_VALUE
         FROM transactions tr
-        JOIN customers c 
-            ON tr.ID_CUSTOMER = c.ID_CUSTOMER
-        LEFT JOIN ref_product p 
-            ON tr.ID_PRODUCT = p.ID_PRODUCT
+        JOIN customers c ON tr.ID_CUSTOMER = c.ID_CUSTOMER
+        LEFT JOIN ref_product p ON tr.ID_PRODUCT = p.ID_PRODUCT
         WHERE tr.CREATED_AT >= DATE_FORMAT(NOW(), '%Y-01-01')
-        AND c.ID_CUSTOMER != 1 AND tr.id_product != 7
+        AND c.ID_CUSTOMER != 1 
+        AND tr.ID_PRODUCT != 7
         GROUP BY c.ID_CUSTOMER, c.FIRST_NAME, c.LAST_NAME
-        ORDER BY TOTAL_ORDER_VALUE DESC
-        LIMIT 5
+    ) sub
+    LEFT JOIN (
+        SELECT 
+            ID_CUSTOMER,
+            SUM(amount) AS TOTAL_REFUND
+        FROM wallet_topup
+        WHERE CREATED_AT >= DATE_FORMAT(NOW(), '%Y-01-01')
+        AND id_topup_type = 5
+        GROUP BY ID_CUSTOMER
+    ) ref ON sub.ID_CUSTOMER = ref.ID_CUSTOMER
+    ORDER BY NET_VALUE DESC
+    LIMIT 5
     ");
 
     $stmt_3->execute();
@@ -200,20 +214,20 @@
                     data: <?= json_encode($sales_cy) ?>,
                     borderColor: 'rgb(35, 40, 86)',
                     backgroundColor: 'rgba(35, 40, 86, 0.25)', // ✅ background
-                    borderWidth: 2,
-                    tension: 0.3,
-                    fill: true, // ✅ enable background
-                    pointRadius: 3
+                    borderWidth: 3,
+                    tension: 0.4,
+                    fill: true,
+                    pointRadius: 4
                 },
                 {
                     label: 'Sales <?= date("Y")-1 ?>',
                     data: <?= json_encode($sales_py) ?>,
                     borderColor: 'rgb(249, 230, 27)',
                     backgroundColor: 'rgba(249, 230, 27, 0.25)', // ✅ background
-                    borderWidth: 2,
-                    tension: 0.3,
+                    borderWidth: 3,
+                    tension: 0.4,
                     fill: true,
-                    pointRadius: 3
+                    pointRadius: 4
                 }
             ]
         },
@@ -257,21 +271,21 @@
                     label: 'Members <?= date("Y") ?>',
                     data: <?= json_encode($cnt_customer_cy) ?>,
                     borderColor: 'rgb(35, 40, 86)',
-                    backgroundColor: 'rgb(35, 40, 86, 0.50)', // ✅ background
-                    borderWidth: 2,
-                    tension: 0.3,
-                    fill: true, // ✅ enable background
-                    pointRadius: 3
+                    backgroundColor: 'rgba(35, 40, 86, 0.25)', // ✅ background
+                    borderWidth: 3,
+                    tension: 0.4,
+                    fill: true,
+                    pointRadius: 4
                 },
                 {
                     label: 'Members <?= date("Y")-1 ?>',
                     data: <?= json_encode($cnt_customer_py) ?>,
                     borderColor: 'rgb(249, 230, 27)',
                     backgroundColor: 'rgba(249, 230, 27, 0.25)', // ✅ background
-                    borderWidth: 2,
-                    tension: 0.3,
+                    borderWidth: 3,
+                    tension: 0.4,
                     fill: true,
-                    pointRadius: 3
+                    pointRadius: 4
                 }
             ]
         },
@@ -342,7 +356,7 @@
             labels: <?= json_encode(array_column($kpi_3, 'CUSTOMER')) ?>,
             datasets: [{
                 label: 'Total Order Value',
-                data: <?= json_encode(array_map(fn($c) => (float)$c['TOTAL_ORDER_VALUE'], $kpi_3)) ?>,
+                data: <?= json_encode(array_map(fn($c) => (float)$c['NET_VALUE'], $kpi_3)) ?>,
                 backgroundColor: 'rgb(35, 40, 86)',
             }]
         },
@@ -380,10 +394,10 @@
                     data: <?= json_encode($loss_cy) ?>,
                     borderColor: 'rgb(255, 0, 0)',
                     backgroundColor: 'rgba(255, 0, 0, 0.25)', // ✅ background
-                    borderWidth: 2,
-                    tension: 0.3,
-                    fill: true, // ✅ enable background
-                    pointRadius: 3
+                    borderWidth: 3,
+                    tension: 0.4,
+                    fill: true,
+                    pointRadius: 4
                 }
             ]
         },
