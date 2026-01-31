@@ -272,16 +272,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $total_price = $product['PRICE'] * $qty;
         $pdo->beginTransaction();
         foreach ($id_customers as $id_customer) {
-            $id_customer = (int)$id_customer; // sanitize each
-            // Insert transaction
-            $stmt1 = $pdo->prepare("INSERT INTO transactions 
-                (ID_USER, ID_CUSTOMER, ID_PRODUCT, QUANTITY, TOTAL, CREATED_AT) 
-                VALUES (?, ?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL 1 HOUR))");
-            $stmt1->execute([$current_admin_id, $id_customer, $id_product, $qty, $total_price]);
+        $id_customer = (int) $id_customer; // sanitize each
+
+        // Insert transaction
+        $stmt1 = $pdo->prepare("
+            INSERT INTO transactions 
+            (ID_USER, ID_CUSTOMER, ID_PRODUCT, QUANTITY, TOTAL, CREATED_AT) 
+            VALUES (?, ?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL 1 HOUR))
+        ");
+        $stmt1->execute([
+            $current_admin_id,
+            $id_customer,
+            $id_product,
+            $qty,
+            $total_price
+        ]);
+        // Special customers "Externe"
+        if (in_array($id_customer, [2, 3])) {
+            // Choose topup type
+            $id_type = ($id_customer == 2) ? 3 : 2;
+            $stmt2 = $pdo->prepare("
+                INSERT INTO wallet_topup 
+                (ID_USER, ID_CUSTOMER, ID_TOPUP_TYPE, AMOUNT, CREATED_AT)
+                VALUES (?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL 1 HOUR))
+            ");
+            $stmt2->execute([
+                $current_admin_id,
+                $id_customer,
+                $id_type,
+                $total_price
+            ]);
+        } else {
             // Deduct from customer balance
-            $stmt2 = $pdo->prepare("UPDATE customers SET BALANCE = BALANCE - ? WHERE ID_CUSTOMER = ?");
-            $stmt2->execute([$total_price, $id_customer]);
+            $stmt2 = $pdo->prepare("
+                UPDATE customers 
+                SET BALANCE = BALANCE - ? 
+                WHERE ID_CUSTOMER = ?
+            ");
+            $stmt2->execute([
+                $total_price,
+                $id_customer
+            ]);
         }
+    }
         $pdo->commit();
         $_SESSION['toast'] = [
             'type' => 'success',

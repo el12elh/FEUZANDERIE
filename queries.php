@@ -1,12 +1,12 @@
 <?php
     // Fetch products
     $all_prods = $pdo
-        ->query("SELECT * FROM ref_product ORDER BY IS_ACTIVE DESC, NAME")
+        ->query("SELECT * FROM ref_product ORDER BY IS_ACTIVE DESC, ID_PRODUCT")
         ->fetchAll();
 
     // GET only below
     $customers = $pdo
-        ->query("SELECT * FROM customers ORDER BY IS_ACTIVE DESC, BALANCE, LAST_NAME, FIRST_NAME")
+        ->query("SELECT * FROM customers ORDER BY IS_ACTIVE DESC, BALANCE, FIRST_NAME, LAST_NAME")
         ->fetchAll();
 
     // Fetch Users NOT yet linked to any customer
@@ -24,14 +24,15 @@
         FROM customers c
         LEFT JOIN users_customers uc ON c.ID_CUSTOMER = uc.ID_CUSTOMER
         LEFT JOIN users u ON uc.ID_USER = u.ID_USER
-        ORDER BY u.IS_ADMIN, c.LAST_NAME, c.FIRST_NAME
+        WHERE c.ID_CUSTOMER >3
+        ORDER BY u.IS_ADMIN, c.FIRST_NAME, c.LAST_NAME
     ")->fetchAll();
 
     // Fetch data for dropdowns and tables
-    $customers_1 = $pdo->query("SELECT ID_CUSTOMER, FIRST_NAME, LAST_NAME, BALANCE FROM customers WHERE IS_ACTIVE = 1 ORDER BY LAST_NAME, FIRST_NAME")->fetchAll();
-    $customers_2 = $pdo->query("SELECT ID_CUSTOMER, FIRST_NAME, LAST_NAME, BALANCE FROM customers WHERE IS_ACTIVE = 1 OR BALANCE < 0 ORDER BY LAST_NAME, FIRST_NAME")->fetchAll();
-    $products = $pdo->query("SELECT * FROM ref_product WHERE IS_ACTIVE = 1 ORDER BY NAME")->fetchAll();
-    $topup_types = $pdo->query("SELECT * FROM ref_topup_type WHERE NAME != 'INITIAL' ORDER BY ID_TOPUP_TYPE")->fetchAll();
+    $customers_1 = $pdo->query("SELECT ID_CUSTOMER, FIRST_NAME, LAST_NAME, BALANCE FROM customers WHERE IS_ACTIVE = 1 ORDER BY FIRST_NAME, LAST_NAME")->fetchAll();
+    $customers_2 = $pdo->query("SELECT ID_CUSTOMER, FIRST_NAME, LAST_NAME, BALANCE FROM customers WHERE (IS_ACTIVE = 1 OR BALANCE < 0) AND ID_CUSTOMER > 3  ORDER BY FIRST_NAME, LAST_NAME")->fetchAll();
+    $products = $pdo->query("SELECT * FROM ref_product WHERE IS_ACTIVE = 1 ORDER BY ID_PRODUCT")->fetchAll();
+    $topup_types = $pdo->query("SELECT * FROM ref_topup_type WHERE ID_TOPUP_TYPE != 1 ORDER BY ID_TOPUP_TYPE")->fetchAll();
 
     // Fetch data (Your existing SQL query)
     $tr_stmt = $pdo->prepare("
@@ -59,7 +60,7 @@
         LEFT JOIN customers a ON uc.ID_CUSTOMER = a.ID_CUSTOMER
         LEFT JOIN ref_product p ON tr.ID_PRODUCT = p.ID_PRODUCT
 
-        ORDER BY CREATED_AT DESC, CUSTOMER
+        ORDER BY CREATED_AT DESC, CUSTOMER, LABEL
         LIMIT 10
         ");
     $tr_stmt->execute();

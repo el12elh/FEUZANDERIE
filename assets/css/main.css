@@ -1797,6 +1797,13 @@ input, select, textarea {
     color: #1b1f22;
 }
 
+/* Make placeholder text white */
+.ts-wrapper .ts-control .item.placeholder,
+.ts-wrapper .ts-control input::placeholder {
+    color: #ffffff !important;
+    opacity: 1 !important; /* Ensure it’s fully visible on dark background */
+}
+
 /* ================================
    Choices.js – Custom Dark Theme
    Adapted from Tom Select Style
@@ -1886,12 +1893,28 @@ input, select, textarea {
     padding: 2px 8px !important;
 }
 
-/* 9. The Remove (X) Button on Tags */
+/* 9. The Remove (X) Button on Tags - UX Optimized */
 .choices__list--multiple .choices__item .choices__button {
     border-left: 1px solid rgba(255, 255, 255, 0.3) !important;
     margin-left: 8px !important;
-    padding-left: 8px !important;
-    filter: invert(1); /* Makes the default X icon white */
+    padding-left: 2px !important;
+    width: 20px !important; /* Larger hit area */
+    opacity: 0.7;
+    transition: all 0.2s ease;
+    /* Use a clean white X icon */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z'/%3E%3C/svg%3E") !important;
+    background-size: 14px !important;
+}
+
+/* Hover State: Make it pop so the user knows they are about to delete */
+.choices__list--multiple .choices__item .choices__button:hover {
+    opacity: 1;
+    background-color: rgba(255, 0, 0, 0.2) !important; /* Subtle red warning glow */
+}
+
+/* Active State: Slight scale down on click for tactile feel */
+.choices__list--multiple .choices__item .choices__button:active {
+    transform: scale(0.8);
 }
 
 /* 10. The Search Input Field */
@@ -1916,4 +1939,16 @@ input, select, textarea {
     right: 0.75rem !important;
     top: 50% !important;
     transform: translateY(-50%);
+}
+
+/* Make placeholder text white for Choices.js */
+.choices__input::placeholder {
+    color: #ffffff !important;
+    opacity: 1 !important; /* ensures full visibility on dark background */
+}
+
+/* For multi-select when no items selected, placeholder chip text */
+.choices__inner .choices__item.placeholder {
+    color: #ffffff !important;
+    opacity: 1 !important;
 }

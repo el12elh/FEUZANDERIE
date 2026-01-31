@@ -1,3 +1,9 @@
+document.getElementById('product').addEventListener('change', function () {
+    if (this.value !== '') {
+        document.getElementById('qty').focus();
+    }
+});
+
 document.addEventListener('DOMContentLoaded', function () {
 
     /* ===============================
@@ -55,59 +61,29 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     /* ===============================
-       SELL FLOW (Tom Select)
-       Product -> Qty -> Button
-       =============================== */
-
-    let tsProduct, tsQty;
-
-    tsProduct = new TomSelect('.js-product', {
-        create: false,
-        sortField: { field: 'text', direction: 'asc' },
-        onChange: function () {
-            this.blur();
-            tsQty?.focus();
-        }
-    });
-
-    tsQty = new TomSelect('.js-qty', {
-        create: false,
-        sortField: { field: 'number', direction: 'asc' },
-        onChange: function () {
-            this.blur();
-            document.querySelector('button[name="sell"]')?.focus();
-        }
-    });
-
-    /* ===============================
        TOP-UP FLOW (Tom Select)
        Member -> Method -> Amount -> Button
        =============================== */
 
-    let tsMember, tsMethod, tsAmount;
-
     tsMember = new TomSelect('.js-member', {
-        create: false,
-        sortField: { field: 'text', direction: 'asc' },
-        onChange: function () {
-            this.blur();
-            tsMethod?.focus();
+    create: false,
+    sortField: { field: 'text', direction: 'asc' },
+    onChange: function (value) {
+            if (value) {
+                document.getElementById('type').focus();
+            }
         }
     });
 
-    tsMethod = new TomSelect('.js-method', {
-        create: false,
-        onChange: function () {
-            this.blur();
-            tsAmount?.focus();
+    document.getElementById('type').addEventListener('change', function () {
+        if (this.value) {
+            document.getElementById('amount').focus();
         }
     });
 
-    tsAmount = new TomSelect('.js-amount', {
-        create: false,
-        onChange: function () {
-            this.blur();
-            document.querySelector('button[name="do_topup"]')?.focus();
+    document.getElementById('amount').addEventListener('change', function () {
+        if (this.value) {
+            document.querySelector('button[name="do_topup"]').focus();
         }
     });
 

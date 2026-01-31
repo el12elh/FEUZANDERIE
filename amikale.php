@@ -25,7 +25,7 @@
                     </select>
                 </div>
                 <div class="field">
-                    <select name="id_product" class="js-product" required>
+                    <select name="id_product" id="product" required>
                         <option value="">-- Select Product --</option>
                         <?php foreach ($products as $p): ?>
                         <option value="<?= $p['ID_PRODUCT']; ?>">
@@ -35,7 +35,7 @@
                     </select>
                 </div>
                 <div class="field">
-                    <select name="qty" class="js-qty" required>
+                    <select name="qty" id="qty" required>
                         <option value="">-- Select Quantity --</option>
                         <?php for ($i=1; $i<=25; $i++): ?>
                         <option value="<?= $i ?>"><?= $i ?></option>
@@ -68,7 +68,7 @@
                     </select>
                 </div>
                 <div class="field">
-                    <select name="id_type" class="js-method" required>
+                    <select name="id_type" id="type" required>
                         <option value="">-- Select Method --</option>
                         <?php foreach ($topup_types as $t): ?>
                         <option value="<?= $t['ID_TOPUP_TYPE']; ?>"><?= $t['NAME']; ?></option>
@@ -76,7 +76,7 @@
                     </select>
                 </div>
                 <div class="field">
-                    <select name="amount" class="js-amount" required>
+                    <select name="amount" id="amount" required>
                         <option value="">-- Select Amount --</option>
                         <?php for ($i=1;$i<=100;$i++): ?>
                         <option value="<?= $i ?>">+<?= $i ?>€</option>

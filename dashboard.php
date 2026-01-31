@@ -10,7 +10,7 @@
                 SUM(total) AS total_sales
             FROM transactions
             WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR)
-            AND id_customer != 1
+            AND id_customer != 1 AND id_product != 7
             GROUP BY YEAR(created_at), MONTH(created_at)
         ),
         refunds AS (
@@ -57,12 +57,12 @@
         $monthIndex = (int)$row['MONTH_TR'] - 1;
 
         if ($row['YEAR_TR'] == $currentYear) {
-            $sales_cy[$monthIndex] = (int)$row['TOTAL_SALES'];
+            $sales_cy[$monthIndex] = (int)$row['NET_SALES'];
             $cnt_customer_cy[$monthIndex] = $row['CNT_CUSTOMER'];
         }
 
         if ($row['YEAR_TR'] == $previousYear) {
-            $sales_py[$monthIndex] = (int)$row['TOTAL_SALES'];
+            $sales_py[$monthIndex] = (int)$row['NET_SALES'];
             $cnt_customer_py[$monthIndex] = $row['CNT_CUSTOMER'];
         }
     }
@@ -139,7 +139,8 @@
             ON tr.ID_CUSTOMER = c.ID_CUSTOMER
         LEFT JOIN ref_product p 
             ON tr.ID_PRODUCT = p.ID_PRODUCT
-        WHERE tr.CREATED_AT >= DATE_FORMAT(NOW(), '%Y-01-01') AND c.ID_CUSTOMER != 1
+        WHERE tr.CREATED_AT >= DATE_FORMAT(NOW(), '%Y-01-01')
+        AND c.ID_CUSTOMER != 1 AND tr.id_product != 7
         GROUP BY c.ID_CUSTOMER, c.FIRST_NAME, c.LAST_NAME
         ORDER BY TOTAL_ORDER_VALUE DESC
         LIMIT 5

@@ -8,11 +8,11 @@ require_once 'db.php';
 $tr_stmt = $pdo->prepare("
     SELECT 
         'TOPUP' AS TYPE,
-        CONCAT(c.LAST_NAME, ' ', c.FIRST_NAME) AS CUSTOMER,
+        CONCAT(c.FIRST_NAME, ' ', c.LAST_NAME) AS CUSTOMER,
         r.NAME AS LABEL,
         t.AMOUNT AS AMOUNT,
         t.CREATED_AT,
-        CONCAT(a.LAST_NAME, ' ', a.FIRST_NAME) AS BY_NAME
+        CONCAT(a.FIRST_NAME, ' ', a.LAST_NAME) AS BY_NAME
     FROM wallet_topup t
     JOIN customers c ON t.ID_CUSTOMER = c.ID_CUSTOMER
     LEFT JOIN users_customers uc ON t.ID_USER = uc.ID_USER
@@ -21,11 +21,11 @@ $tr_stmt = $pdo->prepare("
     UNION ALL
     SELECT 
         'PURCHASE' AS TYPE,
-        CONCAT(c.LAST_NAME, ' ', c.FIRST_NAME) AS CUSTOMER,
+        CONCAT(c.FIRST_NAME, ' ', c.LAST_NAME) AS CUSTOMER,
         CONCAT(tr.QUANTITY, 'x', p.NAME) AS LABEL,
         -(p.PRICE * tr.QUANTITY) AS AMOUNT,
         tr.CREATED_AT,
-        CONCAT(a.LAST_NAME, ' ', a.FIRST_NAME) AS BY_NAME
+        CONCAT(a.FIRST_NAME, ' ', a.LAST_NAME) AS BY_NAME
     FROM transactions tr
     JOIN customers c ON tr.ID_CUSTOMER = c.ID_CUSTOMER
     LEFT JOIN users_customers uc ON tr.ID_USER = uc.ID_USER
