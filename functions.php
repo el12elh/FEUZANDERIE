@@ -344,6 +344,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header("Location: " . $_SERVER['REQUEST_URI']);
         exit;
     }
-}
 
+    // Contact Form Logic
+    if (isset($_POST['contact_submit'])) {
+        // 1. Sanitize inputs
+        $name    = filter_var(trim($_POST['name']), FILTER_SANITIZE_STRING);
+        $email   = filter_var(trim($_POST['email']), FILTER_SANITIZE_EMAIL);
+        $message = filter_var(trim($_POST['message']), FILTER_SANITIZE_STRING);
+  
+        // 3. Send Email to contact@feuzanderie.fr
+        $to      = "contact@feuzanderie.fr";
+        $subject = "=?UTF-8?B?".base64_encode("New Message from $name")."?=";
+        // Construct the email body
+        $email_content = $message;
+
+        // Headers (Important for deliverability)
+        $headers = "From: $email\r\n";
+        $headers .= "Reply-To: $email\r\n";
+        $headers .= "MIME-Version: 1.0\r\n";
+        $headers .= "Content-Type: text/plain; charset=UTF-8\r\n"; // Force l'UTF-8
+        $headers .= "X-Mailer: PHP/" . phpversion();
+        
+        mail($to, $subject, $email_content, $headers);
+
+        $_SESSION['toast'] = [
+            'type' => 'success',
+            'message' => 'Message sent successfully!'
+        ];
+        header("Location: " . $_SERVER['REQUEST_URI']);
+        exit;
+    }
+
+}
 ?>
