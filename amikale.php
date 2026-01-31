@@ -78,7 +78,7 @@
                 <div class="field">
                     <select name="amount" id="amount" required>
                         <option value="">-- Select Amount --</option>
-                        <?php for ($i=1;$i<=100;$i++): ?>
+                        <?php for ($i=1;$i<=200;$i++): ?>
                         <option value="<?= $i ?>">+<?= $i ?>€</option>
                         <?php endfor; ?>
                     </select>
