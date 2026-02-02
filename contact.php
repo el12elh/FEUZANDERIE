@@ -33,5 +33,11 @@
                 <span class="label">Instagram</span>
             </a>
         </li>
+        <li>
+            <a href="https://github.com/el12elh/FEUZANDERIE" 
+               class="icon brands fa-github">
+                <span class="label">GitHub</span>
+            </a>
+        </li>
     </ul>
 </article>
