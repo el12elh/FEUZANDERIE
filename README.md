@@ -1,6 +1,6 @@
 # AMIKALE
 
-A lightweight PHP web application for managing products, members, transactions and a simple wallet system.
+A lightweight web application for managing products, members, transactions and a simple wallet system.
 
 Features
 - Product listing and management
