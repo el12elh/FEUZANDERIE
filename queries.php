@@ -6,7 +6,7 @@
 
     // GET only below
     $customers = $pdo
-        ->query("SELECT * FROM customers ORDER BY IS_ACTIVE DESC, BALANCE, FIRST_NAME, LAST_NAME")
+        ->query("SELECT * FROM customers WHERE ID_CUSTOMER > 3 ORDER BY IS_ACTIVE DESC, BALANCE, FIRST_NAME, LAST_NAME")
         ->fetchAll();
 
     // Fetch Users NOT yet linked to any customer
