@@ -198,7 +198,7 @@
     <hr />
     <canvas id="CustChart" height="100"></canvas>
     <hr />
-    <canvas id="topCustomersChart" height="150"></canvas>
+    <canvas id="topCustomersChart" height="200"></canvas>
     
 <script>
     document.addEventListener('DOMContentLoaded', () => {
