@@ -6,7 +6,7 @@
             SELECT 
                 YEAR(created_at)  AS year_tr,
                 MONTH(created_at) AS month_tr,
-                COUNT(DISTINCT id_customer) AS cnt_customer,
+                COUNT(DISTINCT CASE WHEN id_customer > 3 THEN id_customer END) AS cnt_customer,
                 SUM(total) AS total_sales
             FROM transactions
             WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR)
@@ -71,7 +71,7 @@
     $stmt_2= $pdo->prepare("
         SELECT
             rtt.NAME AS METHOD,
-            DATE_FORMAT(wt.CREATED_AT, '%d-%m-%y') AS DATE_TUP,
+            DATE_FORMAT(wt.CREATED_AT, '%a %e %b') AS DATE_TUP,
             SUM(wt.AMOUNT) AS REVENUE
         FROM wallet_topup wt
         JOIN ref_topup_type rtt 
@@ -143,7 +143,7 @@
         JOIN customers c ON tr.ID_CUSTOMER = c.ID_CUSTOMER
         LEFT JOIN ref_product p ON tr.ID_PRODUCT = p.ID_PRODUCT
         WHERE tr.CREATED_AT >= DATE_FORMAT(NOW(), '%Y-01-01')
-        AND c.ID_CUSTOMER != 1 
+        AND c.ID_CUSTOMER > 3 
         AND tr.ID_PRODUCT NOT IN (7,9)
         GROUP BY c.ID_CUSTOMER, c.FIRST_NAME, c.LAST_NAME
     ) sub
@@ -157,7 +157,7 @@
         GROUP BY ID_CUSTOMER
     ) ref ON sub.ID_CUSTOMER = ref.ID_CUSTOMER
     ORDER BY NET_VALUE DESC
-    LIMIT 5
+    LIMIT 10
     ");
 
     $stmt_3->execute();
@@ -366,7 +366,7 @@
             plugins: {
                 title: {
                     display: true,
-                    text: 'Top 5 Members – CY'
+                    text: 'Top 10 Members – CY'
                 },
                 tooltip: {
                     callbacks: {
