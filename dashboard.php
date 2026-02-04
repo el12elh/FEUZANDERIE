@@ -10,7 +10,7 @@
                 SUM(total) AS total_sales
             FROM transactions
             WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR)
-            AND id_customer != 1 AND id_product != 7
+            AND id_customer != 1 AND id_product NOT IN (7,9)
             GROUP BY YEAR(created_at), MONTH(created_at)
         ),
         refunds AS (
@@ -144,7 +144,7 @@
         LEFT JOIN ref_product p ON tr.ID_PRODUCT = p.ID_PRODUCT
         WHERE tr.CREATED_AT >= DATE_FORMAT(NOW(), '%Y-01-01')
         AND c.ID_CUSTOMER != 1 
-        AND tr.ID_PRODUCT != 7
+        AND tr.ID_PRODUCT NOT IN (7,9)
         GROUP BY c.ID_CUSTOMER, c.FIRST_NAME, c.LAST_NAME
     ) sub
     LEFT JOIN (
