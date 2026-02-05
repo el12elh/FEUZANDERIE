@@ -37,11 +37,11 @@
     // Fetch data (Your existing SQL query)
     $tr_stmt = $pdo->prepare("
         SELECT
-            CONCAT(LEFT(c.FIRST_NAME,1), '. ', c.LAST_NAME) AS CUSTOMER,
+            CONCAT(c.FIRST_NAME, ' ', c.LAST_NAME) AS CUSTOMER,
             t.AMOUNT AS AMOUNT,
             r.NAME AS LABEL,
             t.CREATED_AT,
-            CONCAT(LEFT(a.FIRST_NAME,1), '. ', a.LAST_NAME) AS BY_NAME
+            CONCAT(a.FIRST_NAME, ' ', a.LAST_NAME) AS BY_NAME
         FROM wallet_topup t
         JOIN customers c ON t.ID_CUSTOMER = c.ID_CUSTOMER
         LEFT JOIN users_customers uc ON t.ID_USER = uc.ID_USER
@@ -49,11 +49,11 @@
         LEFT JOIN ref_topup_type r ON t.ID_TOPUP_TYPE = r.ID_TOPUP_TYPE
         UNION ALL
         SELECT
-            CONCAT(LEFT(c.FIRST_NAME,1), '. ', c.LAST_NAME) AS CUSTOMER,
+            CONCAT(c.FIRST_NAME, ' ', c.LAST_NAME) AS CUSTOMER,
             -(p.PRICE * tr.QUANTITY) AS AMOUNT,
             CONCAT(tr.QUANTITY, 'x', p.NAME) AS LABEL,
             tr.CREATED_AT,
-            CONCAT(LEFT(a.FIRST_NAME,1), '. ', a.LAST_NAME) AS BY_NAME
+            CONCAT(a.FIRST_NAME, ' ', a.LAST_NAME) AS BY_NAME
         FROM transactions tr
         JOIN customers c ON tr.ID_CUSTOMER = c.ID_CUSTOMER
         LEFT JOIN users_customers uc ON tr.ID_USER = uc.ID_USER
@@ -61,7 +61,7 @@
         LEFT JOIN ref_product p ON tr.ID_PRODUCT = p.ID_PRODUCT
 
         ORDER BY CREATED_AT DESC, CUSTOMER, LABEL
-        LIMIT 10
+        LIMIT 20
         ");
     $tr_stmt->execute();
     $transaction = $tr_stmt->fetchAll(PDO::FETCH_ASSOC);

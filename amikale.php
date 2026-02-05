@@ -102,7 +102,6 @@
                     <tr>
                         <th>Member</th>
                         <th>Details</th>
-                        <th>Amount</th>
                         <th>Date</th>
                         <th>By</th>
                     </tr>
@@ -110,13 +109,15 @@
                 <tbody>
                 <?php
                 foreach ($transaction as $tr):
-                    $color = $tr['AMOUNT'] > 0 ? 'rgb(125,227,211)' : '';
+                    $color = $tr['AMOUNT'] > 0 ? 'rgb(125,227,211)' : 'rgb(255, 99, 132)';
                     $sign = $tr['AMOUNT'] > 0 ? '+' : '';
                 ?>
                     <tr>
                         <td><?= $tr['CUSTOMER'] ?></td>
-                        <td><?= $tr['LABEL'] ?></td>
-                        <td style="color:<?= $color ?>;font-weight:bold;"><?= $sign . number_format($tr['AMOUNT'],0); ?>€</td>
+                        <td>
+                            <span style="color:<?= $color ?>;font-weight:bold;"><?= $sign . number_format($tr['AMOUNT'],0); ?>€</span>
+                            <br><?= $tr['LABEL']?> 
+                        </td>
                         <td><?= date('d/m/y H:i:s', strtotime($tr['CREATED_AT'])) ?></td>
                         <td><?= $tr['BY_NAME'] ?></td>
                     </tr>

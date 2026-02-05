@@ -57,7 +57,7 @@ CREATE TABLE IF NOT EXISTS `ref_topup_type` (
 INSERT INTO `ref_topup_type` (`NAME`) VALUES
     ('Initial'),
     ('Cash'),
-    ('Credit Card'),
+    ('Card'),
     ('Bank Transfer');
 
 CREATE TABLE IF NOT EXISTS `ref_product` (

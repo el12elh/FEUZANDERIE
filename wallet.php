@@ -18,7 +18,7 @@ $stmt_activity = $pdo->prepare("
         t.AMOUNT AS AMOUNT,
         r.NAME AS LABEL,
         t.CREATED_AT,
-        CONCAT(LEFT(a.FIRST_NAME,1), '. ', a.LAST_NAME) AS BY_NAME
+        CONCAT(a.FIRST_NAME, ' ', a.LAST_NAME) AS BY_NAME
     FROM wallet_topup t
     JOIN customers c ON t.ID_CUSTOMER = c.ID_CUSTOMER
     LEFT JOIN users_customers uc ON t.ID_USER = uc.ID_USER
@@ -33,7 +33,7 @@ $stmt_activity = $pdo->prepare("
         -(p.PRICE * tr.QUANTITY) AS AMOUNT,
         CONCAT(tr.QUANTITY, 'x', p.NAME) AS LABEL,
         tr.CREATED_AT,
-        CONCAT(LEFT(a.FIRST_NAME,1), '. ', a.LAST_NAME) AS BY_NAME
+        CONCAT(a.FIRST_NAME, ' ', a.LAST_NAME) AS BY_NAME
     FROM transactions tr
     JOIN customers c ON tr.ID_CUSTOMER = c.ID_CUSTOMER
     LEFT JOIN users_customers uc ON tr.ID_USER = uc.ID_USER

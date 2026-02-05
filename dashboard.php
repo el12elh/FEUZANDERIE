@@ -127,7 +127,7 @@
     $datasets = [];
     $colors = [
         'Cash' => 'rgb(35, 40, 86)',
-        'Credit Card' => 'rgb(249, 230, 27)',
+        'Card' => 'rgb(249, 230, 27)',
         'Bank Transfer' => 'rgb(255, 255, 255)'
     ];
 
