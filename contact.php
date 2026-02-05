@@ -28,14 +28,18 @@
             </a>
         </li>
         <li>
-            <a href="https://www.instagram.com/feuzfeuzfeuz/" 
-               class="icon brands fa-instagram">
+            <a href="https://www.instagram.com/feuzfeuzfeuz/"
+                target="_blank"
+                rel="noreferrer"
+                class="icon brands fa-instagram">
                 <span class="label">Instagram</span>
             </a>
         </li>
         <li>
-            <a href="https://github.com/el12elh/FEUZANDERIE" 
-               class="icon brands fa-github">
+            <a href="https://github.com/el12elh/FEUZANDERIE"
+                target="_blank"
+                rel="noreferrer"
+                class="icon brands fa-github">
                 <span class="label">GitHub</span>
             </a>
         </li>
