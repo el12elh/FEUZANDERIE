@@ -1,6 +1,23 @@
 <?php
     include 'security.php';
 
+    $stmt_0= $pdo->prepare("
+        SELECT
+            rtt.NAME AS METHOD,
+            SUM(wt.AMOUNT) AS REVENUE
+        FROM wallet_topup wt
+        JOIN ref_topup_type rtt 
+        ON wt.ID_TOPUP_TYPE = rtt.ID_TOPUP_TYPE
+        WHERE 
+            wt.ID_TOPUP_TYPE IN (2,3,4) AND
+            YEAR(wt.CREATED_AT) = YEAR(CURDATE())
+        GROUP BY rtt.NAME
+        ORDER BY wt.ID_TOPUP_TYPE
+    ");
+    $stmt_0->execute();
+    $kpi_0 = $stmt_0->fetchAll();
+    $currentYear = date('Y');
+
     $stmt_1= $pdo->prepare("
         WITH sales AS (
             SELECT 
@@ -189,7 +206,12 @@
 
 <article id="dashboard">
     <h2 class="major">Dashboard</h2>
-
+    <div style="display: flex; justify-content: center; align-items: center; margin: 20px 0;">
+        <div style="width: 300px; height: 300px;">
+            <canvas id="topupDonut"></canvas>
+        </div>
+    </div>
+    <hr />
     <canvas id="revenueChart" height="300"></canvas>
     <hr />
     <canvas id="lossChart" height="300"></canvas>
@@ -203,6 +225,72 @@
 <script>
     document.addEventListener('DOMContentLoaded', () => {
 
+    const ctx = document.getElementById('topupDonut').getContext('2d');
+    const centerTextPlugin = {
+        id: 'centerText',
+        beforeDraw(chart) {
+            const { ctx, chartArea } = chart;
+            const dataset = chart.data.datasets[0];
+
+            if (!dataset || !dataset.data.length) return;
+
+            const total = dataset.data.reduce((a, b) => a + b, 0);
+
+            ctx.save();
+            ctx.font = 'bold 18px sans-serif';
+            ctx.fillStyle = '#ffffff';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            const x = (chartArea.left + chartArea.right) / 2;
+            const y = (chartArea.top + chartArea.bottom) / 2;
+
+            ctx.fillText(`€${total.toLocaleString()}`, x, y);
+            ctx.restore();
+        }
+    };
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: <?= json_encode(array_column($kpi_0, 'METHOD')) ?>,
+            datasets: [{
+                data: <?= json_encode(array_map(fn($r) => (float)$r['REVENUE'], $kpi_0)) ?>,
+                backgroundColor: [
+                    'rgb(35, 40, 86)',
+                    'rgb(249, 230, 27)',
+                    'rgb(255, 255, 255)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Top-up Revenue by Payment Method – CY'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => {
+                            const dataset = ctx.chart.data.datasets[0];
+                            const total = dataset.data.reduce((a, b) => a + b, 0);
+                            const value = ctx.parsed;
+                            const percentage = ((value / total) * 100).toFixed(0);
+                            return `${value.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0})}€ (${percentage}%)`;
+                        }
+                    }
+                },
+                legend: {
+                    position: 'top'
+                }
+            },
+            cutout: '60%' // controls donut thickness
+        },
+        plugins: [centerTextPlugin]
+    });
+    
     const ctx1 = document.getElementById('salesChart').getContext('2d');
     new Chart(ctx1, {
         type: 'line',
@@ -329,7 +417,7 @@
             plugins: {
                 title: {
                     display: true,
-                    text: 'Revenue per Payment Method – Last 7 Active Days'
+                    text: 'Top-up Revenue by Payment Method – Last 7 Days'
                 },
                 tooltip: {
                     callbacks: {
