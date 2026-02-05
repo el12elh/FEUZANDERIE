@@ -190,15 +190,15 @@
 <article id="dashboard">
     <h2 class="major">Dashboard</h2>
 
-    <canvas id="revenueChart" height="100"></canvas>
+    <canvas id="revenueChart" height="300"></canvas>
     <hr />
-    <canvas id="lossChart" height="100"></canvas>
+    <canvas id="lossChart" height="300"></canvas>
     <hr />
-    <canvas id="salesChart" height="100"></canvas>
+    <canvas id="salesChart" height="300"></canvas>
     <hr />
-    <canvas id="CustChart" height="100"></canvas>
+    <canvas id="CustChart" height="300"></canvas>
     <hr />
-    <canvas id="topCustomersChart" height="200"></canvas>
+    <canvas id="topCustomersChart" height="300"></canvas>
     
 <script>
     document.addEventListener('DOMContentLoaded', () => {
