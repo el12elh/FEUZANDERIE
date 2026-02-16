@@ -271,88 +271,117 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Handle Sell Action
     if (isset($_POST['sell'])) {
-        $current_admin_id = $_SESSION['user_id'];
-        $id_customers = $_POST['id_customer']; // now an array
-        $id_product = (int)$_POST['id_product'];
-        $qty = (int)$_POST['qty'];
-        // Fetch product
-        $prod_stmt = $pdo->prepare("SELECT NAME, PRICE FROM ref_product WHERE ID_PRODUCT = ?");
-        $prod_stmt->execute([$id_product]);
-        $product = $prod_stmt->fetch();
-        $total_price = $product['PRICE'] * $qty;
-        $pdo->beginTransaction();
-        foreach ($id_customers as $id_customer) {
-        $id_customer = (int) $id_customer; // sanitize each
+        // 1. Check if the token exists and matches
+        if (isset($_POST['token']) && $_POST['token'] === $_SESSION['submit_token']) {
+            
+            $current_admin_id = $_SESSION['user_id'];
+            $id_customers = $_POST['id_customer']; // now an array
+            $id_product = (int)$_POST['id_product'];
+            $qty = (int)$_POST['qty'];
+            // Fetch product
+            $prod_stmt = $pdo->prepare("SELECT NAME, PRICE FROM ref_product WHERE ID_PRODUCT = ?");
+            $prod_stmt->execute([$id_product]);
+            $product = $prod_stmt->fetch();
+            $total_price = $product['PRICE'] * $qty;
+            $pdo->beginTransaction();
+            foreach ($id_customers as $id_customer) {
+            $id_customer = (int) $id_customer; // sanitize each
 
-        // Insert transaction
-        $stmt1 = $pdo->prepare("
-            INSERT INTO transactions 
-            (ID_USER, ID_CUSTOMER, ID_PRODUCT, QUANTITY, TOTAL, CREATED_AT) 
-            VALUES (?, ?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL 1 HOUR))
-        ");
-        $stmt1->execute([
-            $current_admin_id,
-            $id_customer,
-            $id_product,
-            $qty,
-            $total_price
-        ]);
-        // Special customers "Externe"
-        if (in_array($id_customer, [2, 3])) {
-            // Choose topup type
-            $id_type = ($id_customer == 2) ? 3 : 2;
-            $stmt2 = $pdo->prepare("
-                INSERT INTO wallet_topup 
-                (ID_USER, ID_CUSTOMER, ID_TOPUP_TYPE, AMOUNT, CREATED_AT)
-                VALUES (?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL 1 HOUR))
+            // Insert transaction
+            $stmt1 = $pdo->prepare("
+                INSERT INTO transactions 
+                (ID_USER, ID_CUSTOMER, ID_PRODUCT, QUANTITY, TOTAL, CREATED_AT) 
+                VALUES (?, ?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL 1 HOUR))
             ");
-            $stmt2->execute([
+            $stmt1->execute([
                 $current_admin_id,
                 $id_customer,
-                $id_type,
+                $id_product,
+                $qty,
                 $total_price
             ]);
-        } else {
-            // Deduct from customer balance
-            $stmt2 = $pdo->prepare("
-                UPDATE customers 
-                SET BALANCE = BALANCE - ? 
-                WHERE ID_CUSTOMER = ?
-            ");
-            $stmt2->execute([
-                $total_price,
-                $id_customer
-            ]);
+            // Special customers "Externe"
+            if (in_array($id_customer, [2, 3])) {
+                // Choose topup type
+                $id_type = ($id_customer == 2) ? 3 : 2;
+                $stmt2 = $pdo->prepare("
+                    INSERT INTO wallet_topup 
+                    (ID_USER, ID_CUSTOMER, ID_TOPUP_TYPE, AMOUNT, CREATED_AT)
+                    VALUES (?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL 1 HOUR))
+                ");
+                $stmt2->execute([
+                    $current_admin_id,
+                    $id_customer,
+                    $id_type,
+                    $total_price
+                ]);
+            } else {
+                // Deduct from customer balance
+                $stmt2 = $pdo->prepare("
+                    UPDATE customers 
+                    SET BALANCE = BALANCE - ? 
+                    WHERE ID_CUSTOMER = ?
+                ");
+                $stmt2->execute([
+                    $total_price,
+                    $id_customer
+                ]);
+            }
         }
-    }
-        $pdo->commit();
-        $_SESSION['toast'] = [
-            'type' => 'success',
-            'message' => 'Transaction completed successfully'
-        ];
+            $pdo->commit();
+            
+            // 2. CRITICAL: Destroy the token so it can't be used again
+            unset($_SESSION['submit_token']);
+            
+            $_SESSION['toast'] = [
+                'type' => 'success',
+                'message' => 'Transaction completed successfully'
+            ];
+        } else {
+            // This triggers if the button is clicked twice or the page is refreshed
+            $_SESSION['toast'] = [
+                'type' => 'info',
+                'message' => 'Transaction has already been completed'
+            ];
+        }
         header("Location: " . $_SERVER['REQUEST_URI']);
         exit;
     }
 
     // Handle Top-Up Action
     if (isset($_POST['do_topup'])) {
-        $current_admin_id = $_SESSION['user_id'];
-        $id_customer = (int)$_POST['id_customer'];
-        $id_type = (int)$_POST['id_type'];
-        $amount = (float)$_POST['amount'];
-        $pdo->beginTransaction();
-        $stmt1 = $pdo->prepare("INSERT INTO wallet_topup (ID_USER, ID_CUSTOMER, ID_TOPUP_TYPE, AMOUNT, CREATED_AT)
-                                VALUES (?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL 1 HOUR))");
-        $stmt1->execute([$current_admin_id, $id_customer, $id_type, $amount]);
-        $stmt2 = $pdo->prepare("UPDATE customers SET BALANCE = BALANCE + ?, IS_ACTIVE = 1 WHERE ID_CUSTOMER = ?");
-        $stmt2->execute([$amount, $id_customer]);
-        $pdo->commit();
-        $_SESSION['toast'] = [
-            'type' => 'success',
-            'message' => 'Account topped up successfully'
-        ];
+        // 1. Check if the token exists and matches
+        if (isset($_POST['token']) && $_POST['token'] === $_SESSION['submit_token']) {
+            
+            $current_admin_id = $_SESSION['user_id'];
+            $id_customer = (int)$_POST['id_customer'];
+            $id_type = (int)$_POST['id_type'];
+            $amount = (float)$_POST['amount'];
+            $pdo->beginTransaction();
+            $stmt1 = $pdo->prepare("INSERT INTO wallet_topup (ID_USER, ID_CUSTOMER, ID_TOPUP_TYPE, AMOUNT, CREATED_AT)
+                                    VALUES (?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL 1 HOUR))");
+            $stmt1->execute([$current_admin_id, $id_customer, $id_type, $amount]);
+            $stmt2 = $pdo->prepare("UPDATE customers SET BALANCE = BALANCE + ?, IS_ACTIVE = 1 WHERE ID_CUSTOMER = ?");
+            $stmt2->execute([$amount, $id_customer]);
+            $pdo->commit();
+
+            // 2. CRITICAL: Destroy the token so it can't be used again
+            unset($_SESSION['submit_token']);
+
+            // 3. Redirect to prevent "Refresh" resubmission
+            $_SESSION['toast'] = [
+                'type' => 'success',
+                'message' => 'Account topped up successfully'
+            ];
+        } else {
+            // This triggers if the button is clicked twice or the page is refreshed
+            $_SESSION['toast'] = [
+                'type' => 'info',
+                'message' => 'Account has already been topped up'
+            ];
+        }
         header("Location: " . $_SERVER['REQUEST_URI']);
-        exit;
+        exit();
     }
 
     // Contact Form Logic

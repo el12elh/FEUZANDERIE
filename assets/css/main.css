@@ -1691,8 +1691,8 @@ input, select, textarea {
     transform: translateY(0);
 }
 
-.toast.success { background: rgb(35, 40, 86); }
-.toast.info    { background: #17a2b8; }
+.toast.success { background: #232856; }
+.toast.info    { background: #0dcaf0; color: #212529}
 .toast.error   { background: #dc3545; }
 
 .toast-progress {

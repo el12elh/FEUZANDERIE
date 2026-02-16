@@ -42,6 +42,7 @@
                         <?php endfor; ?>
                     </select>
                 </div>
+                <input type="hidden" name="token" value="<?= $_SESSION['submit_token']; ?>">
                 <div class="field">
                     <button type="submit" name="sell" class="primary fit">
                         <i class="fa fa-shopping-cart"></i> Sell
@@ -83,6 +84,7 @@
                         <?php endfor; ?>
                     </select>
                 </div>
+                <input type="hidden" name="token" value="<?= $_SESSION['submit_token']; ?>">
                 <div class="field">
                     <button type="submit" name="do_topup" class="primary fit">
                         <i class="fa fa-wallet"></i> Top-Up
