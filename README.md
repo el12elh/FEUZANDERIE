@@ -33,20 +33,23 @@ Configuration
 Usage
 - Frontend: `index.php` is the main entry point for users.
 - Auth: `signin.php`, `signup.php`, `forgot_password.php`, `reset_password.php` handle authentication flows.
-- Admin: `admin.php` provides administration views (requires admin account).
+- Amikale: `amikale.php` allows admin to perform sales transactions or account top-ups.
 - Export: `export_transactions.php` exports transaction data.
 - Wallet: `wallet.php` contains wallet-related endpoints and views.
+- Admin: `admin.php` provides administration views (requires admin account).
 
 Project structure (important files)
 - `index.php` — public homepage
+- `wallet.php` — to view balance
+- `amikale.php`	— to perform transactions or top-ups
 - `products.php` — product listing and management
 - `members.php` — user list and management
 - `admin.php` — admin dashboard
 - `db.php` — DB connection (configure this)
-- `db/init.sql` — database schema and initial data
-- `assets/` — CSS, JS and fonts
 - `functions.php` — common helper functions
 - `security.php` — security related helpers
+- `db/init.sql` — database schema and initial data
+- `assets/` — CSS, JS and fonts
 
 Database
 Import `db/init.sql` into your MySQL/MariaDB server. Verify tables and initial data after import.
