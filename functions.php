@@ -166,15 +166,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['add_customer'])) {
         $fname   = htmlspecialchars($_POST['first_name'], ENT_QUOTES, 'UTF-8');
         $lname   = htmlspecialchars($_POST['last_name'], ENT_QUOTES, 'UTF-8');
-        $stmt = $pdo->prepare("INSERT INTO customers (FIRST_NAME, LAST_NAME) VALUES (?, ?)");
-        $stmt->execute([$fname, $lname]);
-        $_SESSION['toast'] = [
-            'type' => 'success',
-            'message' => 'Member added successfully'
-        ];
+        
+        try {
+            $stmt = $pdo->prepare("INSERT INTO customers (FIRST_NAME, LAST_NAME) VALUES (?, ?)");
+            $stmt->execute([$fname, $lname]);
+            $_SESSION['toast'] = [
+                'type' => 'success',
+                'message' => 'Member added successfully'
+            ];
+        } catch (PDOException $e) {
+            $_SESSION['toast'] = [
+                'type' => 'error',
+                'message' => 'Member with this name already exists'
+            ];
+        }
         header("Location: " . $_SERVER['REQUEST_URI']);
         exit;
     }
+
     // Toggle customer visibility
     if (isset($_POST['toggle_cust'])) {
         $new_status  = (int)$_POST['set_active'];
@@ -188,6 +197,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header("Location: " . $_SERVER['REQUEST_URI']);
         exit;
     }
+    
     // Add product
     if (isset($_POST['add_product'])) {
         $name  = htmlspecialchars($_POST['prod_name'], ENT_QUOTES, 'UTF-8');
