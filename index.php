@@ -73,8 +73,9 @@
                                 <li><a href="#members"><strong>Members</strong></a></li>
                                 <li><a href="#admin"><strong>Admin</strong></a></li>
                                 <li><a href="#dashboard"><strong>Dashboard</strong></a></li>
+                            <?php else: ?>
+                                <li><a href="#contact"><strong>Contact</strong></a></li>
                             <?php endif; ?>
-                            <li><a href="#contact"><strong>Contact</strong></a></li>
                             <li><a href="signout"><strong>Sign Out</strong></a></li>
                         <?php endif; ?>
                     </ul>

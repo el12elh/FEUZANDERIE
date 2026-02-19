@@ -1159,7 +1159,8 @@ input, select, textarea {
 			-webkit-transition: -webkit-transform 0.325s ease-in-out, -webkit-filter 0.325s ease-in-out;
 			-ms-transition: -ms-transform 0.325s ease-in-out, -ms-filter 0.325s ease-in-out;
 			transition: transform 0.325s ease-in-out, filter 0.325s ease-in-out;
-			background-image: url("../../images/bg.png");
+			background: #020024;
+			background: radial-gradient(circle, rgba(2, 0, 36, 1) 0%, rgba(33, 59, 112, 1) 35%, rgba(254, 230, 24, 1) 100%);
 			background-position: center;
 			background-size: cover;
 			background-repeat: no-repeat;
@@ -1691,7 +1692,7 @@ input, select, textarea {
     transform: translateY(0);
 }
 
-.toast.success { background: #232856; }
+.toast.success { background: #213b70; }
 .toast.info    { background: #0dcaf0; color: #212529}
 .toast.error   { background: #dc3545; }
 

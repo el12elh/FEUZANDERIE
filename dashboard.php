@@ -126,8 +126,8 @@
     // 2. Prepare datasets for Chart
     $datasets = [];
     $colors = [
-        'Cash' => 'rgb(35, 40, 86)',
-        'Card' => 'rgb(249, 230, 27)',
+        'Cash' => 'rgb(33, 59, 112)',
+        'Card' => 'rgb(254, 230, 54)',
         'Bank Transfer' => 'rgb(255, 255, 255)'
     ];
 
@@ -256,8 +256,8 @@
             datasets: [{
                 data: <?= json_encode(array_map(fn($r) => (float)$r['REVENUE'], $kpi_0)) ?>,
                 backgroundColor: [
-                    'rgb(35, 40, 86)',
-                    'rgb(249, 230, 27)',
+                    'rgb(33, 59, 112)',
+                    'rgb(254, 230, 54)',
                     'rgb(255, 255, 255)'
                 ],
                 borderWidth: 1
@@ -300,8 +300,8 @@
                 {
                     label: 'Sales <?= date("Y") ?>',
                     data: <?= json_encode($sales_cy) ?>,
-                    borderColor: 'rgb(35, 40, 86)',
-                    backgroundColor: 'rgba(35, 40, 86, 0.25)', // ✅ background
+                    borderColor: 'rgb(33, 59, 112)',
+                    backgroundColor: 'rgba(33, 59, 112, 0.25)', // ✅ background
                     borderWidth: 3,
                     tension: 0.4,
                     fill: true,
@@ -310,8 +310,8 @@
                 {
                     label: 'Sales <?= date("Y")-1 ?>',
                     data: <?= json_encode($sales_py) ?>,
-                    borderColor: 'rgb(249, 230, 27)',
-                    backgroundColor: 'rgba(249, 230, 27, 0.25)', // ✅ background
+                    borderColor: 'rgb(254, 230, 54)',
+                    backgroundColor: 'rgba(254, 230, 54, 0.25)', // ✅ background
                     borderWidth: 3,
                     tension: 0.4,
                     fill: true,
@@ -358,8 +358,8 @@
                 {
                     label: 'Members <?= date("Y") ?>',
                     data: <?= json_encode($cnt_customer_cy) ?>,
-                    borderColor: 'rgb(35, 40, 86)',
-                    backgroundColor: 'rgba(35, 40, 86, 0.25)', // ✅ background
+                    borderColor: 'rgb(33, 59, 112)',
+                    backgroundColor: 'rgba(33, 59, 112, 0.25)', // ✅ background
                     borderWidth: 3,
                     tension: 0.4,
                     fill: true,
@@ -368,8 +368,8 @@
                 {
                     label: 'Members <?= date("Y")-1 ?>',
                     data: <?= json_encode($cnt_customer_py) ?>,
-                    borderColor: 'rgb(249, 230, 27)',
-                    backgroundColor: 'rgba(249, 230, 27, 0.25)', // ✅ background
+                    borderColor: 'rgb(254, 230, 54)',
+                    backgroundColor: 'rgba(254, 230, 54, 0.25)', // ✅ background
                     borderWidth: 3,
                     tension: 0.4,
                     fill: true,
@@ -445,7 +445,7 @@
             datasets: [{
                 label: 'Total Order Value',
                 data: <?= json_encode(array_map(fn($c) => (float)$c['NET_VALUE'], $kpi_3)) ?>,
-                backgroundColor: 'rgb(35, 40, 86)',
+                backgroundColor: 'rgb(33, 59, 112)',
             }]
         },
         options: {
