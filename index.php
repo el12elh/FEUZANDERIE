@@ -23,6 +23,13 @@
     <body class="is-preload">
         <!-- Wrapper -->
         <div id="wrapper">
+            <!-- Christmas snow effect -->
+            <?php
+                $currentMonth = date('n');
+                $currentDay = date('j');
+                // Show snow effect from December 1st to December 25th
+                if ($currentMonth == 12 && $currentDay <= 25): 
+            ?>
             <link rel="stylesheet" href="assets/css/noel/neige.css"/>
             
             <div class="snow" style="position:fixed!important">
@@ -41,16 +48,17 @@
                     <div class="snow__fall"></div>
                 </div>
             </div>
+            <?php endif; ?>
             
             <!-- Header -->
             <header id="header">
-                <div class="logo">
+                <div class="logo" onclick="location.reload();" style="cursor: pointer;">
                     <img src="images/logo.png" alt="Logo">
                 </div>
                 <div class="content">
                     <div class="inner">
                         <h1>FEUZANDERIE🦅</h1>
-                        <p>Amikale des joueurs de l'USJ🔵🟡</p>
+                        <p>Amikale des joueurs de l'USJ</p>
                     </div>
                 </div>
                 <nav>
@@ -104,7 +112,7 @@
             <?php include 'toast.php'; ?>
             <!-- Footer -->
             <footer id="footer">
-                <p class="copyright"> &copy; FEUZANDERIE 🦅<br/>&lt;/&gt; with ❤ by 
+                <p class="copyright"> &copy; FEUZANDERIE🦅<br/>&lt;/&gt; with ❤ by 
                 <a href="https://www.linkedin.com/in/el-mehdi-el-haddad/" target="_blank"
                     rel="noreferrer">El Mehdi El Haddad</a></p>
             </footer>   
