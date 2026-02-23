@@ -7,7 +7,7 @@
 <!DOCTYPE HTML>
 <html lang="en">
     <head>
-        <title>FEUZANDERIE</title>
+        <title>Feuzanderie</title>
         <meta charset="utf-8"/>
         <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"/>
         <link rel="stylesheet" href="assets/css/main.css"/>
@@ -57,7 +57,7 @@
                 </div>
                 <div class="content">
                     <div class="inner">
-                        <h1>FEUZANDERIE🦅</h1>
+                        <h1>Feuzanderie🦅</h1>
                         <p>Amikale des joueurs de l'USJ</p>
                     </div>
                 </div>
@@ -113,7 +113,7 @@
             <?php include 'toast.php'; ?>
             <!-- Footer -->
             <footer id="footer">
-                <p class="copyright"> &copy; FEUZANDERIE🦅<br/>&lt;/&gt; with ❤ by 
+                <p class="copyright"> &copy; Feuzanderie🦅<br/>&lt;/&gt; with ❤ by 
                 <a href="https://www.linkedin.com/in/el-mehdi-el-haddad/" target="_blank"
                     rel="noreferrer">El Mehdi El Haddad</a></p>
             </footer>   

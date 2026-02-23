@@ -36,7 +36,7 @@
             </a>
         </li>
         <li>
-            <a href="https://github.com/el12elh/FEUZANDERIE"
+            <a href="https://github.com/el12elh/Feuzanderie"
                 target="_blank"
                 rel="noreferrer"
                 class="icon brands fa-github">
