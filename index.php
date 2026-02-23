@@ -113,7 +113,7 @@
             <?php include 'toast.php'; ?>
             <!-- Footer -->
             <footer id="footer">
-                <p class="copyright"> &copy; Feuzanderie🦅<br/>&lt;/&gt; with ❤ by 
+                <p class="copyright">&lt;/&gt; with ❤ by 
                 <a href="https://www.linkedin.com/in/el-mehdi-el-haddad/" target="_blank"
                     rel="noreferrer">El Mehdi El Haddad</a></p>
             </footer>   
