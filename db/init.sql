@@ -58,6 +58,7 @@ INSERT INTO `ref_topup_type` (`NAME`) VALUES
     ('Initial'),
     ('Cash'),
     ('Card'),
+    ('Refund'),
     ('Bank Transfer');
 
 CREATE TABLE IF NOT EXISTS `ref_product` (

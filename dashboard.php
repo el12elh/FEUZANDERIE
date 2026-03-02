@@ -9,7 +9,7 @@
         JOIN ref_topup_type rtt 
         ON wt.ID_TOPUP_TYPE = rtt.ID_TOPUP_TYPE
         WHERE 
-            wt.ID_TOPUP_TYPE IN (2,3,4) AND
+            wt.ID_TOPUP_TYPE IN (2,3,6) AND
             YEAR(wt.CREATED_AT) = YEAR(CURDATE())
         GROUP BY rtt.NAME
         ORDER BY wt.ID_TOPUP_TYPE
@@ -96,11 +96,11 @@
         INNER JOIN (
             SELECT DISTINCT DATE(CREATED_AT) AS active_date
             FROM wallet_topup
-            WHERE ID_TOPUP_TYPE IN (2,3,4)
+            WHERE ID_TOPUP_TYPE IN (2,3,6)
             ORDER BY active_date DESC
             LIMIT 7
         ) AS last_seven ON DATE(wt.CREATED_AT) = last_seven.active_date
-        WHERE wt.ID_TOPUP_TYPE IN (2,3,4)
+        WHERE wt.ID_TOPUP_TYPE IN (2,3,6)
         GROUP BY DATE(wt.CREATED_AT), rtt.NAME
         ORDER BY wt.ID_TOPUP_TYPE, DATE(wt.CREATED_AT)
     ");
@@ -127,7 +127,7 @@
     $datasets = [];
     $colors = [
         'Cash' => 'rgb(33, 59, 112)',
-        'Card' => 'rgb(254, 230, 54)',
+        'SumUp' => 'rgb(254, 230, 54)',
         'Bank Transfer' => 'rgb(255, 255, 255)'
     ];
 
